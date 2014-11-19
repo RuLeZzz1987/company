@@ -26,19 +26,14 @@ public class DepartmentController extends HttpServlet {
 
     @Override
     public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        Action action;
+
         resp.setContentType("application/json; charset=UTF-8");
         PrintWriter writer = resp.getWriter();
         JSONObject payloadData = departmentService.getPayloadData(req.getReader());
         JSONArray array = new JSONArray();
 
         try {
-            try {
-                action = Action.valueOf(payloadData.getString("action"));
-            } catch (Exception e) {
-                action = Action.UNKNOWN;
-            }
-
+            Action action = Action.parseAction(payloadData);
             switch (action) {
                 case CREATE: {
                     departmentService.create(payloadData.getString("model_name"));

@@ -24,15 +24,15 @@ public class StaffController extends HttpServlet {
 
     @Override
     public void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        req.setAttribute("id_department", req.getParameter("id_department"));
-        req.setAttribute("name_department", req.getParameter("name_department"));
+/*        req.setAttribute("id_department", req.getParameter("id_department"));
+        req.setAttribute("name_department", req.getParameter("name_department"));*/
         req.getRequestDispatcher("WEB-INF/jsp/staff.jsp").forward(req, resp);
     }
 
     @Override
     public void doPost(HttpServletRequest req, HttpServletResponse resp) {
         resp.setContentType("application/json; charset=UTF-8");
-        Action action;
+
         try {
             PrintWriter writer = resp.getWriter();
             JSONObject payloadData = staffService.getPayloadData(req.getReader());
@@ -40,11 +40,7 @@ public class StaffController extends HttpServlet {
             int current_id = Integer.parseInt(req.getParameter("id_department"));
 
             try {
-                try {
-                    action = Action.valueOf(payloadData.getString("action"));
-                } catch (Exception e) {
-                    action = Action.UNKNOWN;
-                }
+                Action action = Action.parseAction(payloadData);
                 switch (action) {
                     case CREATE: {
                         SimpleDateFormat format = new SimpleDateFormat("yyyy.MM.dd", Locale.ENGLISH);

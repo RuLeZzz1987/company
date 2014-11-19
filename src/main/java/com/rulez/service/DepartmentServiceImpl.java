@@ -40,9 +40,8 @@ public class DepartmentServiceImpl implements DepartmentService {
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     while (resultSet.next()) {
-                        DepartmentModel model = new DepartmentModel();
-                        model.setId(resultSet.getInt("id_department"));
-                        model.setName(resultSet.getString("name_department"));
+                        DepartmentModel model = new DepartmentModel(resultSet.getInt("id_department"),
+                                resultSet.getString("name_department"));
                         departmentModels.add(model);
                     }
                 }

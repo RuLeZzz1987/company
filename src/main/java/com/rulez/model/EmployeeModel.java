@@ -13,47 +13,33 @@ public class EmployeeModel {
     private String email;
     private Date hireDate;
 
-    public EmployeeModel() {
-        this.department = new DepartmentModel();
+    public EmployeeModel(int id, String name, int id_department, String name_department, String email, Date hireDate) {
+        this.id = id;
+        this.name = name;
+        this.department = new DepartmentModel(id_department, name_department);
+        this.email = email;
+        this.hireDate = hireDate;
     }
 
     public Date getHireDate() {
-        return hireDate;
-    }
-
-    public void setHireDate(Date hireDate) {
-        this.hireDate = hireDate;
+        return new Date(hireDate.getTime());
     }
 
     public String getEmail() {
         return email;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
     public int getId() {
         return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public DepartmentModel getDepartment() {
         return department;
     }
 
-    public void setDepartment(DepartmentModel department) {
-        this.department = department;
-    }
+
 }

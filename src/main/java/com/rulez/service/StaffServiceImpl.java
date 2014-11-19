@@ -34,13 +34,12 @@ public class StaffServiceImpl implements StaffService {
                 statement.setInt(1, id);
                 try (ResultSet resultSet = statement.executeQuery()) {
                     while (resultSet.next()) {
-                        EmployeeModel model = new EmployeeModel();
-                        model.setId(resultSet.getInt("id_employee"));
-                        model.setName(resultSet.getString("name_employee"));
-                        model.setEmail(resultSet.getString("email_employee"));
-                        model.getDepartment().setId(resultSet.getInt("id_department"));
-                        model.getDepartment().setName(resultSet.getString("name_department"));
-                        model.setHireDate(resultSet.getDate("hire_date"));
+                        EmployeeModel model = new EmployeeModel(resultSet.getInt("id_employee"),
+                                resultSet.getString("name_employee"),
+                                resultSet.getInt("id_department"),
+                                resultSet.getString("name_department"),
+                                resultSet.getString("email_employee"),
+                                resultSet.getDate("hire_date"));
                         employeeModels.add(model);
                     }
                 } catch (SQLException e) { /*NOP*/ }

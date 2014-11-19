@@ -25,6 +25,10 @@
         <url-pattern>/staff</url-pattern>
     </servlet-mapping>
 
+    <welcome-file-list>
+        <welcome-file>/departments</welcome-file>
+    </welcome-file-list>
+
 
     <display-name>Archetype Created Web Application</display-name>
 

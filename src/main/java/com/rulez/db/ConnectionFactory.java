@@ -14,19 +14,31 @@ import java.util.Properties;
  */
 public class ConnectionFactory {
 
+    private static String url;
+    private static String driver;
+    private static String login;
+    private static String password;
+
+    static {
+        Properties configFile = new Properties();
+        InputStream inputStream = ConnectionFactory.class.getClassLoader().getResourceAsStream("config.properties");
+        try {
+            configFile.load(inputStream);
+            driver = configFile.getProperty("db.driver");
+            url = configFile.getProperty("db.url");
+            login = configFile.getProperty("db.login");
+            password = configFile.getProperty("db.password");
+        } catch (IOException e) {
+            /*NOP*/
+        }
+    }
+
     public static Connection getConnection() {
         Connection connection;
-        Properties configFile = new Properties();
         try {
-            InputStream inputStream = ConnectionFactory.class.getClassLoader().getResourceAsStream("config.properties");
-            configFile.load(inputStream);
-            if (inputStream != null) {
-                Class.forName(configFile.getProperty("db.driver")).newInstance();
-                connection = DriverManager.getConnection(configFile.getProperty("db.url"),
-                        configFile.getProperty("db.login"),
-                        configFile.getProperty("db.password"));
-                return connection;
-            }
+            Class.forName(driver).newInstance();
+            connection = DriverManager.getConnection(url, login, password);
+            return connection;
         } catch (Exception e) { /*NOP*/ }
         return null;
     }
