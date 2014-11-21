@@ -2,18 +2,29 @@
  * Created by DukaA on 18.11.2014.
  */
 
-function buildTable() {
+function makeRequest(url, data) {
+    var result;
     $.ajax({
         type: "POST",
-        url: document.url,
+        url: url,
         dataType: "json",
         async : false,
-        contentType: "application/json; charset=UTF-8"
-    }).done(function(data){ buildT(data) });
+        contentType: "application/json; charset=UTF-8",
+        data : data
+    }).done( function(data) { result = data; });
+    return result;
 }
 
 function createRow(data) {
-    var tr = document.createElement("tr");
+    return $('<tr>').append($('<td>').append($('<span>').addClass('spanId').text(data.model_id)))
+                    .append($('<td>').append($('<span>').addClass('spanName').text(data.model_name)))
+                    .append($('<td>').append($('<span>').addClass('spanEmail').text(data.model_email)))
+                    .append($('<td>').append($('<span>').addClass('spanHireDate').text(data.model_hire_date)))
+                    .append($('<td>').append($('<div>').append($('<input>').attr('type', 'button').attr('value', 'Udpate').click( function() { updateRow(data.model_id, data.model_name, data.model_email, data.model_hire_date); } ))
+                    .append($('<input>').attr('type', 'button').attr('value', 'Delete').click( function() { deleteEmployee(data.model_id); }) )));
+
+
+   /* var tr = document.createElement("tr");
 
     var tdId = document.createElement("td");
     var spanId = document.createElement("span");
@@ -58,35 +69,29 @@ function createRow(data) {
     tdDeleteBtn.appendChild(divControls);
     tr.appendChild(tdDeleteBtn);
 
-    return tr;
+    return tr;*/
 }
 
 function buildT(data) {
     $('#table-staff > tbody').html("");
     for (var i=0; i < data.length; i++) {
         var tr = createRow(data[i]);
-        if ( i % 2 == 0 ) {
+        /*if ( i % 2 == 0 ) {
             tr.setAttribute("class", "even");
         } else {
             tr.setAttribute("class", "odd");
-        }
+        }*/
         $('#table-staff > tbody').append(tr);
     }
 }
 
 function deleteEmployee(id) {
-    $.ajax({
-        type: "POST",
-        url: document.url,
-        dataType: "json",
-        async: false,
-        contentType: "application/json; charset=UTF-8",
-        data: JSON.stringify({action : "DELETE", model_id : id})
-    }).done(function(data) { buildT(data); });
+    var payload = JSON.stringify({action : "DELETE", model_id : id});
+    buildT(makeRequest(document.url, payload));
 }
 
 $( document ).ready(function() {
-    buildTable();
+    buildT(makeRequest(document.url));
     $('#createDialog').dialog({
         autoOpen: false,
         resizable : false,
@@ -175,23 +180,15 @@ function updateEmployee(id) {
 
     if (rowValidation(name, email)) {
         if (serverMailValidationForUpdate(email, "This email already exist.", id)) {
-            $.ajax({
-                type: "POST",
-                url: document.url,
-                dataType: "json",
-                async: false,
-                contentType: "application/json; charset=UTF-8",
-                data: JSON.stringify({
-                    action: 'UPDATE',
-                    model_id: id,
-                    model_name: name.val(),
-                    model_email: email.val(),
-                    model_id_department: id_department.val(),
-                    model_hire_date: hireDate.val()
-                })
-            }).done(function (data) {
-                buildT(data);
+            var payload = JSON.stringify({
+                action: 'UPDATE',
+                model_id: id,
+                model_name: name.val(),
+                model_email: email.val(),
+                model_id_department: id_department.val(),
+                model_hire_date: hireDate.val()
             });
+            buildT(makeRequest(document.url, payload));
             $("#updateDialog").dialog("close");
         }
     }
@@ -206,39 +203,22 @@ function createEmployee() {
 
     if (rowValidation(name, email)) {
         if (serverMailValidation(email, "This email already exist.")) {
-            $.ajax({
-                type: "POST",
-                url: document.url,
-                dataType: "json",
-                async: false,
-                contentType: "application/json; charset=UTF-8",
-                data: JSON.stringify({
-                    action: 'CREATE',
-                    model_name: name.val(),
-                    model_email: email.val(),
-                    model_id_department: id_department.val(),
-                    model_hire_date: hireDate.val()
-                })
-            }).done(function (data) {
-                buildT(data);
+            var payload = JSON.stringify({
+                action: 'CREATE',
+                model_name: name.val(),
+                model_email: email.val(),
+                model_id_department: id_department.val(),
+                model_hire_date: hireDate.val()
             });
+            buildT(makeRequest(document.url, payload));
             $("#createDialog").dialog("close");
         }
     }
 }
 
 function serverMailValidation(mail, n) {
-    var valid;
-    $.ajax({
-        type: "POST",
-        url: document.url,
-        dataType: "json",
-        async : false,
-        contentType: "application/json; charset=UTF-8",
-        data: JSON.stringify({ action : 'VALIDATE', model_email :  mail.val()})
-    }).done(function(data) {
-        valid = data[0].validation_result;
-    });
+    var payload = JSON.stringify({ action : 'VALIDATE', model_email :  mail.val()});
+    var valid = makeRequest(document.url, payload)[0].validation_result;
     if (!valid) {
         mail.addClass( "ui-state-error" );
         updateTips( n );
@@ -247,19 +227,10 @@ function serverMailValidation(mail, n) {
 }
 
 function serverMailValidationForUpdate(mail, n, id) {
-    var valid;
-    var cur_id = -1;
-    $.ajax({
-        type: "POST",
-        url: document.url,
-        dataType: "json",
-        async : false,
-        contentType: "application/json; charset=UTF-8",
-        data: JSON.stringify({ action : 'VALIDATE', model_email :  mail.val()})
-    }).done(function(data) {
-        valid = data[0].validation_result;
-        cur_id = data[0].valid_for_update;
-    });
+    var payload = JSON.stringify({ action : 'VALIDATE', model_email :  mail.val()});
+    var reqResult = makeRequest(document.url, payload);
+    var valid = reqResult[0].validation_result;
+    var cur_id = reqResult[0].valid_for_update;
     if (!valid) {
         if (cur_id != id) {
             mail.addClass( "ui-state-error" );
@@ -308,13 +279,7 @@ function createEmployeeDialog() {
 }
 
 function getSelectDepartments(employeeDepartment) {
-    $.ajax({
-        type: "POST",
-        url: "/departments",
-        dataType: "json",
-        async : false,
-        contentType: "application/json; charset=UTF-8"
-    }).done(function(data){ fillingSelectDepartments(data, employeeDepartment); });
+    fillingSelectDepartments(makeRequest("/departments"), employeeDepartment);
 }
 
 function fillingSelectDepartments(data, employeeDepartment) {
