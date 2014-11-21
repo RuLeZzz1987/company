@@ -1,97 +1,25 @@
 /**
  * Created by DukaA on 18.11.2014.
  */
+table = '#table-staff > tbody';
+staffUrl = document.url;
 
-function makeRequest(url, data) {
-    var result;
-    $.ajax({
-        type: "POST",
-        url: url,
-        dataType: "json",
-        async : false,
-        contentType: "application/json; charset=UTF-8",
-        data : data
-    }).done( function(data) { result = data; });
-    return result;
-}
-
-function createRow(data) {
-    return $('<tr>').append($('<td>').append($('<span>').addClass('spanId').text(data.model_id)))
+function createRow(data, trClass) {
+    return $('<tr>').addClass(trClass).append($('<td>').append($('<span>').addClass('spanId').text(data.model_id)))
                     .append($('<td>').append($('<span>').addClass('spanName').text(data.model_name)))
                     .append($('<td>').append($('<span>').addClass('spanEmail').text(data.model_email)))
                     .append($('<td>').append($('<span>').addClass('spanHireDate').text(data.model_hire_date)))
                     .append($('<td>').append($('<div>').append($('<input>').attr('type', 'button').attr('value', 'Udpate').click( function() { updateRow(data.model_id, data.model_name, data.model_email, data.model_hire_date); } ))
                     .append($('<input>').attr('type', 'button').attr('value', 'Delete').click( function() { deleteEmployee(data.model_id); }) )));
-
-
-   /* var tr = document.createElement("tr");
-
-    var tdId = document.createElement("td");
-    var spanId = document.createElement("span");
-    spanId.className = "spanId";
-    spanId.innerText = data.model_id;
-    tdId.appendChild(spanId);
-    tr.appendChild(tdId);
-
-    var tdName = document.createElement("td");
-    var spanName = document.createElement("span");
-    spanName.className = "spanName";
-    spanName.innerText = data.model_name;
-    tdName.appendChild(spanName);
-    tr.appendChild(tdName);
-
-    var tdEmail = document.createElement("td");
-    var spanEmail = document.createElement("span");
-    spanEmail.className = "spanEmail";
-    spanEmail.innerText = data.model_email;
-    tdEmail.appendChild(spanEmail);
-    tr.appendChild(tdEmail);
-
-    var tdHireDate = document.createElement("td");
-    var spanHireDate = document.createElement("span");
-    spanHireDate.className = "spanHireDate";
-    spanHireDate.innerText = data.model_hire_date;
-    tdHireDate.appendChild(spanHireDate);
-    tr.appendChild(tdHireDate);
-
-    var divControls = document.createElement("div");
-    var tdDeleteBtn = document.createElement("td");
-    var deleteBtn = document.createElement("input");
-    var updateBtn = document.createElement("input");
-    deleteBtn.type = "button";
-    updateBtn.type = "button";
-    updateBtn.setAttribute("value", "Update");
-    deleteBtn.setAttribute("value", "Delete");
-    updateBtn.setAttribute( "onClick", "javascript: updateRow(" + data.model_id + ",'" + data.model_name + "','" + data.model_email + "','" + data.model_hire_date + "');" )
-    deleteBtn.setAttribute( "onClick", "javascript: deleteEmployee(" + data.model_id + ");" );
-    divControls.appendChild(deleteBtn);
-    divControls.appendChild(updateBtn);
-    tdDeleteBtn.appendChild(divControls);
-    tr.appendChild(tdDeleteBtn);
-
-    return tr;*/
-}
-
-function buildT(data) {
-    $('#table-staff > tbody').html("");
-    for (var i=0; i < data.length; i++) {
-        var tr = createRow(data[i]);
-        /*if ( i % 2 == 0 ) {
-            tr.setAttribute("class", "even");
-        } else {
-            tr.setAttribute("class", "odd");
-        }*/
-        $('#table-staff > tbody').append(tr);
-    }
 }
 
 function deleteEmployee(id) {
     var payload = JSON.stringify({action : "DELETE", model_id : id});
-    buildT(makeRequest(document.url, payload));
+    buildT(table, makeRequest(staffUrl, payload));
 }
 
 $( document ).ready(function() {
-    buildT(makeRequest(document.url));
+    buildT(table, makeRequest(staffUrl));
     $('#createDialog').dialog({
         autoOpen: false,
         resizable : false,
@@ -188,12 +116,11 @@ function updateEmployee(id) {
                 model_id_department: id_department.val(),
                 model_hire_date: hireDate.val()
             });
-            buildT(makeRequest(document.url, payload));
+            buildT(table, makeRequest(staffUrl, payload));
             $("#updateDialog").dialog("close");
         }
     }
 }
-
 
 function createEmployee() {
     var name = $( "#employee-name" );
@@ -210,7 +137,7 @@ function createEmployee() {
                 model_id_department: id_department.val(),
                 model_hire_date: hireDate.val()
             });
-            buildT(makeRequest(document.url, payload));
+            buildT(table, makeRequest(staffUrl, payload));
             $("#createDialog").dialog("close");
         }
     }
@@ -218,7 +145,7 @@ function createEmployee() {
 
 function serverMailValidation(mail, n) {
     var payload = JSON.stringify({ action : 'VALIDATE', model_email :  mail.val()});
-    var valid = makeRequest(document.url, payload)[0].validation_result;
+    var valid = makeRequest(staffUrl, payload)[0].validation_result;
     if (!valid) {
         mail.addClass( "ui-state-error" );
         updateTips( n );
@@ -228,7 +155,7 @@ function serverMailValidation(mail, n) {
 
 function serverMailValidationForUpdate(mail, n, id) {
     var payload = JSON.stringify({ action : 'VALIDATE', model_email :  mail.val()});
-    var reqResult = makeRequest(document.url, payload);
+    var reqResult = makeRequest(staffUrl, payload);
     var valid = reqResult[0].validation_result;
     var cur_id = reqResult[0].valid_for_update;
     if (!valid) {
@@ -242,54 +169,19 @@ function serverMailValidationForUpdate(mail, n, id) {
     return valid;
 }
 
-function checkRegexp( o, regexp, n ) {
-    if ( !( regexp.test( o.val() ) ) ) {
-        o.addClass( "ui-state-error" );
-        updateTips( n );
-        return false;
-    } else {
-        return true;
-    }
-}
-
-function updateTips( t ) {
-    var tips = $( ".validateTips" );
-    tips
-        .text( t )
-        .addClass( "ui-state-highlight" );
-    setTimeout(function() {
-        tips.removeClass( "ui-state-highlight", 1500 );
-    }, 500 );
-}
-
-function checkLength( o, n, min, max ) {
-    if ( o.val().length > max || o.val().length < min ) {
-        o.addClass( "ui-state-error" );
-        updateTips( "Length of " + n + " must be between " +
-        min + " and " + max + "." );
-        return false;
-    } else {
-        return true;
-    }
-}
-
 function createEmployeeDialog() {
     getSelectDepartments($('#employee-department'));
     $('#createDialog').dialog('open');
 }
 
 function getSelectDepartments(employeeDepartment) {
-    fillingSelectDepartments(makeRequest("/departments"), employeeDepartment);
+    fillingSelectDepartments(makeRequest(departmentsUrl), employeeDepartment);
 }
 
 function fillingSelectDepartments(data, employeeDepartment) {
-    var option = document.createElement("option");
     employeeDepartment.html('');
     for (var i = 0; i < data.length; i++) {
-        var option = document.createElement("option");
-        option.setAttribute("value", data[i].model_id);
-        option.innerText = data[i].model_name;
-        employeeDepartment.append(option);
+        employeeDepartment.append($('<option>').attr('value', data[i].model_id).text(data[i].model_name));
     }
     employeeDepartment.val($('#current_id_department').text());
 }

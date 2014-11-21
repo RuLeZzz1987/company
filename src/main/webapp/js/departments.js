@@ -2,26 +2,7 @@
  * Created by dukaa on 17.11.2014.
  */
 
-function buildTable() {
-    $.ajax({
-        type: "POST",
-        url: "/departments",
-        dataType: "json",
-        async : false,
-        contentType: "application/json; charset=UTF-8"
-    }).done(function(data){
-        $('#table-departments > tbody').html("");
-        for (var i=0; i < data.length; i++) {
-            var tr = createRow(data[i]);
-            if ( i % 2 == 0 ) {
-                tr.setAttribute("class", "even");
-            } else {
-                tr.setAttribute("class", "odd");
-            }
-            $('#table-departments > tbody').append(tr);
-        }
-    });
-}
+table = '#table-departments > tbody';
 
 function updateRow(id) {
     $('#updateDialog').dialog({
@@ -49,46 +30,8 @@ function updateRow(id) {
     $('#updateDialog').dialog("open");
 }
 
-
-function createRow(data) {
-    var tr = document.createElement("tr");
-
-    var tdId = document.createElement("td");
-    var spanId = document.createElement("span");
-    spanId.innerText = data.model_id;
-    tdId.appendChild(spanId);
-    tr.appendChild(tdId);
-
-    var tdName = document.createElement("td");
-    var aName = document.createElement("a");
-    aName.innerText = data.model_name;
-    aName.href = "/staff?id_department=" + data.model_id + "&name_department=" + data.model_name;
-    tdName.appendChild(aName);
-    tr.appendChild(tdName);
-
-
-    var divControls = document.createElement("div");
-    var tdDeleteBtn = document.createElement("td");
-    var deleteBtn = document.createElement("input");
-    var updateBtn = document.createElement("input");
-    deleteBtn.type = "button";
-    updateBtn.type = "button";
-    updateBtn.setAttribute("value", "Update");
-    deleteBtn.setAttribute("value", "Delete");
-    updateBtn.setAttribute( "onClick", "javascript: updateRow(" + data.model_id + ");" )
-    deleteBtn.setAttribute( "onClick", "javascript: deleteDepartment(" + data.model_id + ");" );
-    divControls.appendChild(deleteBtn);
-    divControls.appendChild(updateBtn);
-    tdDeleteBtn.appendChild(divControls);
-    tr.appendChild(tdDeleteBtn);
-
-
-
-    return tr;
-}
-
 $( document ).ready(function() {
-    buildTable();
+    buildT(table, makeRequest(departmentsUrl));
     $('#createDialog').dialog({
         autoOpen: false,
         resizable : false,
@@ -114,14 +57,8 @@ $( document ).ready(function() {
 });
 
 function deleteDepartment(id) {
-    $.ajax({
-        type: "POST",
-        url: "/departments",
-        dataType: "json",
-        async : false,
-        contentType: "application/json; charset=UTF-8",
-        data: JSON.stringify({ action : 'DELETE', model_id :  id })
-    }).done( buildTable() );
+    var payload = JSON.stringify({ action : 'DELETE', model_id :  id });
+    buildT(table, makeRequest(departmentsUrl, payload));
 }
 
 function validation(name) {
@@ -139,15 +76,8 @@ function validation(name) {
 function updateDepartment(id) {
     var new_name = $('#new_department_name');
     if (validation(new_name)) {
-        $.ajax({
-            type: "POST",
-            url: "/departments",
-            dataType: "json",
-            async : false,
-            contentType: "application/json; charset=UTF-8",
-            data: JSON.stringify({action: 'UPDATE', model_id: id, model_new_name: new_name.val()})
-        }).done();
-        buildTable();
+        var payload = JSON.stringify({action: 'UPDATE', model_id: id, model_new_name: new_name.val()});
+        buildT(table, makeRequest(departmentsUrl, payload));
         $("#updateDialog").dialog("close");
     }
 }
@@ -155,63 +85,19 @@ function updateDepartment(id) {
 function createDepartment() {
     var name_department = $('#department_name');
     if (validation(name_department)) {
-        $.ajax({
-            type: "POST",
-            url: "/departments",
-            dataType: "json",
-            async : false,
-            contentType: "application/json; charset=UTF-8",
-            data: JSON.stringify({action: 'CREATE', model_name: name_department.val()})
-        }).done();
-        buildTable();
+
+        var payload = JSON.stringify({action: 'CREATE', model_name: name_department.val()});
+        buildT(table, makeRequest(departmentsUrl, payload));
         $("#createDialog").dialog( "close" );
     }
 }
 
 function serverDepartmentNameValidation(name, n) {
-    var valid;
-    $.ajax({
-            type: "POST",
-            url: "/departments",
-            dataType: "json",
-            async : false,
-            contentType: "application/json; charset=UTF-8",
-            data: JSON.stringify({ action : 'VALIDATE', model_name :  name.val()})
-    }).done(function(data) { valid = data[0].validation_result; });
+    var payload = JSON.stringify({ action : 'VALIDATE', model_name :  name.val()});
+    var valid = makeRequest(departmentsUrl, payload)[0].validation_result;
     if (!valid) {
         name.addClass( "ui-state-error" );
         updateTips( n );
     }
     return valid;
-}
-
-function checkRegexp( o, regexp, n ) {
-    if ( !( regexp.test( o.val() ) ) ) {
-        o.addClass( "ui-state-error" );
-        updateTips( n );
-        return false;
-    } else {
-        return true;
-    }
-}
-
-function updateTips( t ) {
-    var tips = $( ".validateTips" );
-    tips
-        .text( t )
-        .addClass( "ui-state-highlight" );
-    setTimeout(function() {
-        tips.removeClass( "ui-state-highlight", 1500 );
-    }, 500 );
-}
-
-function checkLength( o, n, min, max ) {
-    if ( o.val().length > max || o.val().length < min ) {
-        o.addClass( "ui-state-error" );
-        updateTips( "Length of " + n + " must be between " +
-        min + " and " + max + "." );
-        return false;
-    } else {
-        return true;
-    }
 }
