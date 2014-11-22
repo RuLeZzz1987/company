@@ -26,8 +26,6 @@ public class DepartmentController extends HttpServlet {
 
     @Override
     public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-
-        resp.setContentType("application/json; charset=UTF-8");
         PrintWriter writer = resp.getWriter();
         JSONObject payloadData = departmentService.getPayloadData(req.getReader());
         JSONArray array = new JSONArray();

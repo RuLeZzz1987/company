@@ -24,15 +24,11 @@ public class StaffController extends HttpServlet {
 
     @Override
     public void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-/*        req.setAttribute("id_department", req.getParameter("id_department"));
-        req.setAttribute("name_department", req.getParameter("name_department"));*/
         req.getRequestDispatcher("WEB-INF/jsp/staff.jsp").forward(req, resp);
     }
 
     @Override
     public void doPost(HttpServletRequest req, HttpServletResponse resp) {
-        resp.setContentType("application/json; charset=UTF-8");
-
         try {
             PrintWriter writer = resp.getWriter();
             JSONObject payloadData = staffService.getPayloadData(req.getReader());

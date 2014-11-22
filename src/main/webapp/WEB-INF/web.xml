@@ -25,7 +25,20 @@
         <url-pattern>/staff</url-pattern>
     </servlet-mapping>
 
+    <filter>
+        <filter-name>SimpleFilter</filter-name>
+        <filter-class>com.rulez.controller.SimpleFilter</filter-class>
+    </filter>
 
+    <filter-mapping>
+        <filter-name>SimpleFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+
+    <welcome-file-list>
+        <welcome-file>index.jsp</welcome-file>
+    </welcome-file-list>
 
     <display-name>Archetype Created Web Application</display-name>
 
