@@ -7,8 +7,8 @@ table = '#table-departments > tbody';
 function createRow(data, trClass) {
     return $('<tr>').addClass(trClass).append($('<td>').append($('<span>').text(data.model_id)))
         .append($('<td>').append($('<a>').text(data.model_name).attr('href', "/staff?id_department=" + data.model_id + "&name_department=" + data.model_name)))
-        .append($('<td>').append($('<div>').append($('<input>').attr('type', 'button').attr('value', 'Delete').click( function() { deleteDepartment(data.model_id); } ))
-        .append($('<input>').attr('type', 'button').attr('value', 'Update').click( function() { updateRow(data.model_id); } ))));
+        .append($('<td>').append($('<div>').append($('<input>').attr('type', 'button').attr('value', 'Update').click( function() { updateRow(data.model_id); } ))
+        .append($('<input>').attr('type', 'button').attr('value', 'Delete').click( function() { deleteDepartment(data.model_id); } ))));
     }
 
 function updateRow(id) {
